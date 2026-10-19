@@ -1,0 +1,6 @@
+{
+  "name": "F.E.A.S.T. — Food Efficiency And Support for Targeted Communities",
+  "description": "F.E.A.S.T. connects surplus food donors with nearby individuals and communities within a 5 km radius to eliminate food waste.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,125 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --brand-mint: #2ee59d;
+    --brand-mint-subtle: rgba(46, 229, 157, 0.15);
+    --bg-charcoal: #121418;
+    --bg-card: #1a1d24;
+    --border-dark: #272b35;
+  }
+
+  body {
+    background-color: #0d0f12;
+    color: #e2e8f0;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, .font-heading {
+    font-family: 'Space Grotesk', 'Plus Jakarta Sans', sans-serif;
+  }
+}
+
+/* Custom Leaflet Map styling for minimalist dark theme */
+.leaflet-container {
+  background: #0d0f12 !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+}
+
+.leaflet-tile {
+  filter: brightness(0.7) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3);
+}
+
+.leaflet-popup-content-wrapper {
+  background: #181b22 !important;
+  color: #f1f5f9 !important;
+  border-radius: 14px !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6) !important;
+  border: 1px solid #2a303c !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+.leaflet-popup-content {
+  margin: 0 !important;
+  line-height: 1.4 !important;
+}
+
+.leaflet-popup-tip {
+  background: #181b22 !important;
+  border: 1px solid #2a303c !important;
+}
+
+.leaflet-bar a {
+  background-color: #1a1d24 !important;
+  color: #e2e8f0 !important;
+  border-bottom: 1px solid #2a303c !important;
+}
+
+.leaflet-bar a:hover {
+  background-color: #272b35 !important;
+  color: #2ee59d !important;
+}
+
+/* Pulse animation for viewer GPS location */
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.8;
+  }
+  80%, 100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+.gps-pulse-ring {
+  animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+
+/* Smooth custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0d0f12;
+}
+::-webkit-scrollbar-thumb {
+  background: #272b35;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3b4252;
+}
+
+/* Multi-Theme Palette Support (FEAST_v2.0) */
+.theme-charcoal {
+  --app-bg: #0d0f12;
+  --app-surface: #181b22;
+  --app-panel: #121418;
+  --app-border: #272b35;
+}
+
+.theme-midnight {
+  --app-bg: #000000;
+  --app-surface: #0a0c10;
+  --app-panel: #050608;
+  --app-border: #1a1e27;
+}
+
+.theme-slate {
+  --app-bg: #0a0f1d;
+  --app-surface: #141c2e;
+  --app-panel: #0e1626;
+  --app-border: #25334e;
+}
+
+.theme-emerald {
+  --app-bg: #03140e;
+  --app-surface: #0a261c;
+  --app-panel: #061c14;
+  --app-border: #133d2e;
+}
