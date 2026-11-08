@@ -17,6 +17,12 @@ import { ContactDonorModal } from './components/Modals/ContactDonorModal';
 import { LocationPickerModal } from './components/Modals/LocationPickerModal';
 import { GuidelinesModal } from './components/Modals/GuidelinesModal';
 import { AuthModal } from './components/Modals/AuthModal';
+import {
+  subscribeToFirestoreDonations,
+  saveDonationToFirestore,
+  updateDonationAvailabilityInFirestore,
+  deleteDonationFromFirestore,
+} from './services/firebase';
 
 const AUTH_STORAGE_KEY = 'feast_auth_status_v2';
 const THEME_STORAGE_KEY = 'feast_theme_v2';
@@ -89,7 +95,7 @@ export default function App() {
     }
   }, []);
 
-  // 2. Load and synchronize donations from SQLite backend if available
+  // 2. Load and synchronize donations from SQLite backend and Firestore
   useEffect(() => {
     fetch('/api/donations')
       .then((res) => {
@@ -105,11 +111,32 @@ export default function App() {
         // Fallback to local storage if offline
       });
 
-    const unsubscribe = dataService.subscribe(() => {
+    const unsubscribeLocal = dataService.subscribe(() => {
       setDonations([...dataService.getDonations()]);
       setCurrentUser({ ...dataService.getUserProfile() });
     });
-    return unsubscribe;
+
+    // Real-time Firestore sync
+    let unsubscribeFirestore = () => {};
+    try {
+      unsubscribeFirestore = subscribeToFirestoreDonations(
+        (firestoreDonations) => {
+          if (firestoreDonations && firestoreDonations.length > 0) {
+            setDonations(firestoreDonations);
+          }
+        },
+        (err) => {
+          console.warn('[Firebase] Snapshot error:', err);
+        }
+      );
+    } catch (e) {
+      console.warn('[Firebase] Init subscribe error:', e);
+    }
+
+    return () => {
+      unsubscribeLocal();
+      unsubscribeFirestore();
+    };
   }, []);
 
   // Theme changer with persistence
@@ -186,6 +213,11 @@ export default function App() {
     setDonations([...dataService.getDonations()]);
     setEditingDonation(null);
 
+    // Save to Firestore in background
+    saveDonationToFirestore(donation).catch((err) => {
+      console.warn('[Firebase] Save failed:', err);
+    });
+
     // Also push to SQLite API in background
     fetch('/api/donations', {
       method: 'POST',
@@ -204,6 +236,11 @@ export default function App() {
     dataService.toggleAvailability(id, isAvailable);
     setDonations([...dataService.getDonations()]);
 
+    // Update in Firestore
+    updateDonationAvailabilityInFirestore(id, isAvailable).catch((err) => {
+      console.warn('[Firebase] Toggle availability failed:', err);
+    });
+
     // Update SQLite database
     fetch(`/api/donations/${id}/availability`, {
       method: 'PATCH',
@@ -215,11 +252,18 @@ export default function App() {
   const handleMarkCollected = (id: string) => {
     dataService.updateStatus(id, 'completed');
     setDonations([...dataService.getDonations()]);
+
+    updateDonationAvailabilityInFirestore(id, false).catch(() => {});
   };
 
   const handleDeleteDonation = (id: string) => {
     dataService.deleteDonation(id);
     setDonations([...dataService.getDonations()]);
+
+    // Delete in Firestore
+    deleteDonationFromFirestore(id).catch((err) => {
+      console.warn('[Firebase] Delete failed:', err);
+    });
   };
 
   const handleEditDonation = (donation: FoodDonation) => {

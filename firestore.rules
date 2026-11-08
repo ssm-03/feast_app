@@ -1,0 +1,107 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 1. Global Safety Net: Default-deny all unmapped operations
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'sit21it049@sairamtap.edu.in' ||
+        request.auth.token.email == 'admin@feast.org' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Connection testing doc
+    match /test/connection {
+      allow read: if true;
+    }
+
+    // Admins Collection
+    match /admins/{adminId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin() && isValidId(adminId);
+    }
+
+    // User Profiles Collection
+    match /users/{userId} {
+      function isValidUser(data) {
+        return data.id is string && data.id.size() <= 128 &&
+               data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+               data.email is string && data.email.size() <= 150 &&
+               data.role in ['admin', 'user'] &&
+               data.createdAt is string && data.createdAt.size() <= 50;
+      }
+
+      allow get: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && isValidId(userId) && isValidUser(incoming()) &&
+                   (incoming().role == 'user' || isAdmin());
+      allow update: if (isOwner(userId) || isAdmin()) && isValidId(userId) && isValidUser(incoming()) &&
+                   (incoming().createdAt == existing().createdAt) &&
+                   (isAdmin() || incoming().role == existing().role);
+      allow delete: if isAdmin();
+    }
+
+    // Food Donations Collection
+    match /donations/{donationId} {
+      function isValidDonation(data) {
+        return data.id is string && data.id.size() <= 128 &&
+               data.donorId is string && data.donorId.size() <= 128 &&
+               data.donorName is string && data.donorName.size() > 0 && data.donorName.size() <= 100 &&
+               data.donorPhone is string && data.donorPhone.size() <= 30 &&
+               data.title is string && data.title.size() > 0 && data.title.size() <= 150 &&
+               data.description is string && data.description.size() <= 2000 &&
+               data.category in ['Cooked Meals', 'Bakery & Bread', 'Fresh Produce', 'Packaged & Canned', 'Dairy & Refrigerated', 'Beverages', 'Snacks & Desserts', 'Catering Surplus'] &&
+               data.dietaryType in ['veg', 'non-veg', 'vegan'] &&
+               data.quantity is string && data.quantity.size() <= 80 &&
+               data.estimatedServings is number && data.estimatedServings >= 1 &&
+               data.expiryDeadline is string && data.expiryDeadline.size() <= 50 &&
+               data.pickupAddress is string && data.pickupAddress.size() <= 250 &&
+               data.locality is string && data.locality.size() <= 100 &&
+               data.lat is number && data.lng is number &&
+               data.isAvailable is bool &&
+               data.status in ['active', 'completed', 'cancelled'] &&
+               data.createdAt is string && data.createdAt.size() <= 50;
+      }
+
+      // Public reads for food donations (feed and maps)
+      allow read: if true;
+
+      // Create: Valid donation conforming to schema
+      allow create: if isValidId(donationId) && isValidDonation(incoming());
+
+      // Update: Modify listing (e.g. toggle availability, update details) preserving creation metadata
+      allow update: if isValidId(donationId) &&
+                   (incoming().id == existing().id) &&
+                   (incoming().createdAt == existing().createdAt);
+
+      // Delete: Valid donation id
+      allow delete: if isValidId(donationId);
+    }
+  }
+}

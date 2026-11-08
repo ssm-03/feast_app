@@ -1,0 +1,82 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile representation in F.E.A.S.T.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 100 },
+        "email": { "type": "string", "format": "email", "maxLength": 150 },
+        "phone": { "type": "string", "maxLength": 30 },
+        "preferredContact": { "type": "string", "enum": ["whatsapp", "phone", "sms", "any"] },
+        "locality": { "type": "string", "maxLength": 100 },
+        "userType": { "type": "string", "enum": ["Individual Resident", "Restaurant / Café", "Bakery", "Community Kitchen", "NGO / Charity", "Event Catering"] },
+        "role": { "type": "string", "enum": ["admin", "user"] },
+        "avatarUrl": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["id", "name", "email", "role", "createdAt"]
+    },
+    "FoodDonation": {
+      "title": "FoodDonation",
+      "description": "Surplus food donation record available within a 5 km radius",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "donorId": { "type": "string", "maxLength": 128 },
+        "donorName": { "type": "string", "maxLength": 100 },
+        "donorPhone": { "type": "string", "maxLength": 30 },
+        "donorContactMethod": { "type": "string", "enum": ["whatsapp", "phone", "sms", "any"] },
+        "title": { "type": "string", "maxLength": 150 },
+        "description": { "type": "string", "maxLength": 2000 },
+        "category": { "type": "string", "enum": ["Cooked Meals", "Bakery & Bread", "Fresh Produce", "Packaged & Canned", "Dairy & Refrigerated", "Beverages", "Snacks & Desserts", "Catering Surplus"] },
+        "dietaryType": { "type": "string", "enum": ["veg", "non-veg", "vegan"] },
+        "quantity": { "type": "string", "maxLength": 80 },
+        "estimatedServings": { "type": "number" },
+        "prepTime": { "type": "string", "maxLength": 100 },
+        "expiryDeadline": { "type": "string", "maxLength": 50 },
+        "pickupWindow": { "type": "string", "maxLength": 100 },
+        "pickupAddress": { "type": "string", "maxLength": 250 },
+        "locality": { "type": "string", "maxLength": 100 },
+        "lat": { "type": "number" },
+        "lng": { "type": "number" },
+        "locationVerified": { "type": "boolean" },
+        "locationDiscrepancyMeters": { "type": "number" },
+        "imageUrl": { "type": "string", "maxLength": 500 },
+        "pickupInstructions": { "type": "string", "maxLength": 1000 },
+        "safetyConfirmed": { "type": "boolean" },
+        "isAvailable": { "type": "boolean" },
+        "status": { "type": "string", "enum": ["active", "completed", "cancelled"] },
+        "createdAt": { "type": "string", "maxLength": 50 },
+        "updatedAt": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["id", "donorId", "donorName", "donorPhone", "title", "description", "category", "dietaryType", "quantity", "estimatedServings", "expiryDeadline", "pickupAddress", "locality", "lat", "lng", "isAvailable", "status", "createdAt"]
+    },
+    "Admin": {
+      "title": "Admin",
+      "description": "System administrator mapping for secure role-based access",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "format": "email", "maxLength": 150 },
+        "grantedAt": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["uid", "email"]
+    }
+  },
+  "firestore": {
+    "/donations/{donationId}": {
+      "schema": "#/entities/FoodDonation",
+      "description": "Collection of food donations shared with nearby communities within 5 km"
+    },
+    "/users/{userId}": {
+      "schema": "#/entities/User",
+      "description": "User profiles and contact preferences"
+    },
+    "/admins/{adminId}": {
+      "schema": "#/entities/Admin",
+      "description": "Collection of authorized administrators"
+    }
+  }
+}

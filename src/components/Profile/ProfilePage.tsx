@@ -361,32 +361,36 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       <div className="p-4 rounded-2xl bg-[#181b22] border border-[#272b35] space-y-2.5 text-xs">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Database className="w-4 h-4 text-sky-400" />
+            <Database className="w-4 h-4 text-[#2ee59d]" />
             <h2 className="font-bold text-white uppercase tracking-wider font-heading">
-              Backend Database Status
+              Google Firebase DB Status
             </h2>
           </div>
           <span className="px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-500/40 text-[10px] font-bold">
-            CONNECTED
+            CONNECTED (FIRESTORE)
           </span>
         </div>
 
         <p className="text-[11px] text-neutral-300 leading-relaxed">
-          FEAST_v2.0 maintains a persistent SQLite database with schema tables for <strong className="text-white">users</strong> and <strong className="text-white">donations</strong>, seeded with admin authentication.
+          FEAST_v2.0 is connected to Google Cloud Firebase Firestore with real-time listeners for <strong className="text-white">donations</strong> and <strong className="text-white">users</strong>, backed by an embedded SQLite fallback.
         </p>
 
         <div className="p-3 rounded-xl bg-[#121418] border border-[#222733] space-y-1.5 text-[11px] font-mono">
           <div className="flex justify-between text-neutral-400">
-            <span>Database Engine:</span>
-            <span className="text-sky-300">SQLite (node:sqlite)</span>
+            <span>Primary DB:</span>
+            <span className="text-emerald-400">Google Firestore</span>
           </div>
           <div className="flex justify-between text-neutral-400">
-            <span>Database Path:</span>
-            <span className="text-neutral-200">./data/feast.db</span>
+            <span>Firebase Project:</span>
+            <span className="text-sky-300 truncate max-w-[190px]">gen-lang-client-0090129510</span>
           </div>
           <div className="flex justify-between text-neutral-400">
-            <span>Admin Account:</span>
-            <span className="text-emerald-400">admin@feast.org</span>
+            <span>Firestore DB ID:</span>
+            <span className="text-neutral-200 truncate max-w-[190px]">ai-studio-feastfoodefficie...</span>
+          </div>
+          <div className="flex justify-between text-neutral-400">
+            <span>Admin Email:</span>
+            <span className="text-emerald-300 font-bold">admin@feast.org</span>
           </div>
         </div>
 
@@ -395,16 +399,23 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           className="w-full py-2 px-3 rounded-xl bg-[#1d2330] hover:bg-[#252e40] text-sky-300 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors border border-sky-500/30"
         >
           <Server className="w-3.5 h-3.5" />
-          <span>{showDbDiagnostics ? 'Hide Database Setup Instructions' : 'How Database Connection Works & Setup'}</span>
+          <span>{showDbDiagnostics ? 'Hide Database Details & Setup' : 'View Database Connection Setup & Credentials'}</span>
         </button>
 
         {showDbDiagnostics && (
           <div className="p-3 rounded-xl bg-[#141822] border border-sky-500/40 text-[11px] text-neutral-300 space-y-2 animate-in fade-in">
-            <p className="font-bold text-white">How SQLite Database is Connected:</p>
-            <ol className="list-decimal pl-4 space-y-1 text-neutral-400">
-              <li><strong className="text-neutral-200">Node:sqlite Engine:</strong> Handled by Node 22 native <code className="text-sky-300">DatabaseSync</code> in <code className="text-sky-300">src/server/db.ts</code>.</li>
-              <li><strong className="text-neutral-200">Admin Seed:</strong> Created with scrypt password hashing on startup for <code className="text-emerald-300">admin@feast.org</code> with password <code className="text-emerald-300">AdminPassword123!</code>.</li>
-              <li><strong className="text-neutral-200">External DB Setup (PostgreSQL / Cloud SQL / Supabase):</strong> Replace <code className="text-sky-300">db.ts</code> with a connection string (<code className="text-neutral-300">DATABASE_URL</code>) using Postgres client or Drizzle ORM.</li>
+            <p className="font-bold text-white">Database Implementation & Architecture:</p>
+            <ol className="list-decimal pl-4 space-y-1.5 text-neutral-400">
+              <li><strong className="text-neutral-200">Google Cloud Firestore:</strong> Live real-time multi-device sync via Web SDK in <code className="text-sky-300">src/services/firebase.ts</code> using project <code className="text-emerald-300">gen-lang-client-0090129510</code>.</li>
+              <li><strong className="text-neutral-200">Security Rules:</strong> Deployed with ABAC enforcement in <code className="text-sky-300">firestore.rules</code> guarding <code className="text-neutral-300">donations</code>, <code className="text-neutral-300">users</code>, and <code className="text-neutral-300">admins</code>.</li>
+              <li><strong className="text-neutral-200">Admin Account Credentials:</strong>
+                <div className="mt-1 p-2 bg-[#0d1017] rounded-lg border border-[#232a3a] text-xs font-mono">
+                  <div className="text-neutral-300">Email: <strong className="text-emerald-400">admin@feast.org</strong></div>
+                  <div className="text-neutral-300">Password: <strong className="text-emerald-400">AdminPassword123!</strong></div>
+                  <div className="text-neutral-400 text-[10px] mt-0.5">(Also granted to Google Account: sit21it049@sairamtap.edu.in)</div>
+                </div>
+              </li>
+              <li><strong className="text-neutral-200">Full Stack Local SQLite:</strong> Dual-synced with <code className="text-sky-300">./data/feast.db</code> and Node.js REST API endpoints at <code className="text-sky-300">/api/donations</code> and <code className="text-sky-300">/api/auth/login</code>.</li>
             </ol>
           </div>
         )}
